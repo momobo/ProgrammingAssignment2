@@ -5,6 +5,8 @@
 
 makeCacheMatrix <- function(x = matrix()) {
   inv <- NULL
+# function set exploit the scoping rules to access
+# the closure variables
   set <- function(y) {
     x <<- y
     inv <<- NULL
@@ -12,7 +14,11 @@ makeCacheMatrix <- function(x = matrix()) {
   get <- function() x
   setinverse <- function(solved) inv <<- solved
   getinverse <- function() inv
-  list(set = set, get = get,
+# returned object, composed by 4 functions
+# note that the matrix is hidden in the closure but
+# is accessible through the functions
+  list(set = set, 
+       get = get,
        setinverse = setinverse,
        getinverse = getinverse)
 }
@@ -23,16 +29,23 @@ makeCacheMatrix <- function(x = matrix()) {
 
 cacheSolve <- function(x, ...) {
   ## Return a matrix that is the inverse of 'x'
+  ## be aware that the returned is a "normale" matrix
+  ## not a cached one 
   
   inv <- x$getinverse()
   if(!is.null(inv)) {
+
+    # if the inverse is already in the closure return it
     message("getting cached data")
     return(inv)
+  } else {
+    
+    # not yet calculated. Do it with solve()
+    data <- x$get()
+    inv <- solve(data, ...)
+    x$setinverse(inv)
+    return(inv)
   }
-  data <- x$get()
-  inv <- solve(data, ...)
-  x$setinverse(inv)
-  inv
   
 }
 
